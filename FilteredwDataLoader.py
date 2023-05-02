@@ -238,7 +238,7 @@ def Predict (Xtrain, Ytrain, Xval, Yval, Xtest, hidden, learning_rate, epochs, p
         for i in range (predicted.shape[0]):
             print (f'{round(binY_hat[i].item(), 3)}, {round (binY[i].item(), 3)}', file=f)
     
-    print(f'accuracy = {accuracy}, mean_L1loss = {L1_loss.mean()}')
+    #print(f'accuracy = {accuracy}, mean_L1loss = {L1_loss.mean()}')
 
     #Test
     #convert Xtest to tensor
@@ -247,13 +247,42 @@ def Predict (Xtrain, Ytrain, Xval, Yval, Xtest, hidden, learning_rate, epochs, p
     # Predict Test Dataset    
     model.eval()
     with torch.no_grad():               
-        y_test_transformed = model(X)             
+        y_test_transformed = model(X)    
+
+    #Check L1 score for test set
+    #Read tranformed test labels
+    test_labels = pd.read_csv('../mp01files/Transformed_Test_Labels.csv', delimiter=',')  
+    test_labels = test_labels.to_numpy()   
+    
+    #Bin predicted and labels and rank them    
+    binY_hat = rankbin (y_test_transformed.numpy())
+    #Use Y instead of Yval because shuffle is True for loaderV. Y is of the same size as Yval
+    binY = rankbin (test_labels) 
+
+    #Save the binned predictions and labels for val set in a csv
+    with open ('../Results_new/TestPred.csv', 'w+') as f:
+        print (f'predicted_bin, actual_bin', file=f)
+        for i in range (y_test_transformed.shape[0]):
+            print (f'{round(binY_hat[i].item(), 3)}, {round (binY[i].item(), 3)}', file=f)
+
+    # calculate accuracy
+    correct = 0
+    for i in range (len(binY)) :
+        correct += (binY_hat[i] == binY[i])
+
+    test_accuracy = (correct / len(binY)) * 100 
+    
+    test_L1_loss = 0
+    # calculate the ordinal loss matrix
+    test_L1_loss = np.abs (binY_hat - binY)    
+
+    print (f'test_accuracy = {test_accuracy}, test_mean_ordinal_L1_loss = {test_L1_loss.mean()}')     
     
     #Predictions are quantil transformed.
     #Convert numpy to dataframe
-    test_df = pd.DataFrame (y_test_transformed.numpy())     
+    #test_df = pd.DataFrame (y_test_transformed.numpy())     
     #save test predictions
-    test_df.to_csv("../Results_new/TestPred.csv",index=False)        
+    #test_df.to_csv("../Results_new/TestPred.csv",index=False)        
 
     return L1_loss, accuracy   
 
@@ -316,7 +345,7 @@ def main():
         mean_accuracy = np.asarray(accuracy).mean()
         mean_ordinal_loss = np.asarray(loss).mean()
 
-        print(f'mean_accuracy = {mean_accuracy}, mean_ordinal_l1_loss = {mean_ordinal_loss}, iterations = {iter}')        
+        print(f'val_accuracy = {mean_accuracy}, val_mean_ordinal_l1_loss = {mean_ordinal_loss}, iterations = {iter}')        
 
 if __name__ == '__main__':
    main()

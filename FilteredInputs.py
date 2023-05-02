@@ -229,6 +229,7 @@ def removeOutlier_transform(iqr_or_zscore, edabefore, edaafter):
     #Now that we are done with training and validation data sets, lets plot the distribution
     #of test dataset.
     data_test = pd.read_csv('../mp01files/heatflow_resid_test.csv', delimiter=',') 
+    data_test_labels = pd.read_csv('../mp01files/heatflow_resid_test_labels.csv', delimiter=',') 
 
     if edabefore == 1:
         test = 1
@@ -238,8 +239,9 @@ def removeOutlier_transform(iqr_or_zscore, edabefore, edaafter):
     #transform test dataset, no outlier removal just like val set
     #Save the quantile object to inverse_transform in Predict() in FilteredwDataLoader.py
     TestT = quantileTransform (data_test) 
+    Test_labels = quantileTransform (data_test_labels) 
     TestT.to_csv('../mp01files/Transformed_Test.csv', index=False)
-    
+    Test_labels.to_csv('../mp01files/Transformed_Test_Labels.csv', index=False)    
     
     if edaafter == 1:
         plot_dist (TestT)
