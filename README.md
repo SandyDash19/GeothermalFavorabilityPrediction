@@ -15,3 +15,9 @@ Test outputs are quantile transformed.
 4. Network.py has neural network init and forward pass.
 
 5. MP1_solved.pdf - Technical Report on this project. 
+
+Couple of questions that I want to explore in future:
+1. What kind of data transformation is good for this dataset? How do we pick different types of data transformation methods?
+2. QuantileTransformer converted the distribution to normal but that completely omitted 1s and 4s. I might want to try StdScalar transformation from Sklearn. 
+3. For outlier removal, may be we should observe box plots and remove outliers for certain features only where most of the data falls outside of the box. 
+4. I should plot feature maps and try removing correlated features to see what does that do to the accuracy?
